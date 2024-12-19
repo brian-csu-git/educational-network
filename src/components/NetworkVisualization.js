@@ -63,7 +63,24 @@ const NetworkVisualization = () => {
   const [data, setData] = useState(generateData());
   const [selectedNode, setSelectedNode] = useState(null);
   const [hoveredConnection, setHoveredConnection] = useState(null);
-  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  // Update dimensions on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const container = document.getElementById('network-container');
+      if (container) {
+        setDimensions({
+          width: container.clientWidth,
+          height: Math.max(600, window.innerHeight - 100)
+        });
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Calculate node positions
   const calculatePositions = () => {
@@ -275,8 +292,12 @@ const NetworkVisualization = () => {
   const Node = ({ id, x, y, name, selected }) => (
     <g
       transform={`translate(${x},${y})`}
-      onClick={() => handleNodeClick(id)}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleNodeClick(id);
+      }}
       className="cursor-pointer"
+      style={{ pointerEvents: 'all' }}
     >
       <g className={`transition-all duration-200 ${isConnected(id) ? 'opacity-100' : 'opacity-30'}`}>
         <circle
@@ -371,11 +392,12 @@ const NetworkVisualization = () => {
   };
 
   return (
-    <div className="w-full h-full">
+    <div id="network-container" className="w-full h-screen p-4">
       <svg 
-        width={dimensions.width} 
-        height={dimensions.height}
-        className="bg-white"
+        width="100%" 
+        height="100%"
+        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+        className="bg-white border rounded-lg shadow-lg"
       >
         <Connections />
         
