@@ -235,7 +235,13 @@ const NetworkVisualization = () => {
   };
 
   const handleNodeClick = (nodeId) => {
-    setSelectedNode(selectedNode === nodeId ? null : nodeId);
+    console.log('Node clicked:', nodeId);
+    console.log('Previous selected node:', selectedNode);
+    setSelectedNode(prev => {
+      const newValue = prev === nodeId ? null : nodeId;
+      console.log('Setting selected node to:', newValue);
+      return newValue;
+    });
   };
 
   const isConnected = (nodeId) => {
@@ -247,7 +253,9 @@ const NetworkVisualization = () => {
 
   const Node = ({ id, x, y, name, selected }) => {
     const handleClick = (e) => {
+      e.preventDefault();
       e.stopPropagation();
+      console.log('Click event triggered for node:', id);
       handleNodeClick(id);
     };
 
@@ -343,28 +351,35 @@ const NetworkVisualization = () => {
     });
   };
 
+  useEffect(() => {
+    console.log('Selected node changed to:', selectedNode);
+  }, [selectedNode]);
+
   return (
-    <div id="network-container" className="w-full h-screen p-4 bg-gray-50">
-      <svg 
-        width="100%" 
+    <><div
+      id="network-container"
+      className="w-full h-screen p-4 bg-gray-50"
+      onClick={() => {
+        console.log('Container clicked, clearing selection');
+        setSelectedNode(null);
+      } } /><svg
+        width="100%"
         height="100%"
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         className="bg-white border rounded-lg shadow-lg"
       >
         <Connections />
-        {Object.keys(data).map(layerKey => 
-          data[layerKey].map(node => (
-            <Node
-              key={node.id}
-              id={node.id}
-              x={node.x}
-              y={node.y}
-              name={node.name}
-              selected={selectedNode === node.id}
-            />
-          ))
+        {Object.keys(data).map(layerKey => data[layerKey].map(node => (
+          <Node
+            key={node.id}
+            id={node.id}
+            x={node.x}
+            y={node.y}
+            name={node.name}
+            selected={selectedNode === node.id} />
+        ))
         )}
-      </svg>
+      </svg></>
     </div>
   );
 };
